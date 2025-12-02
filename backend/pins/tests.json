@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "Get all pins",
+      "method": "GET",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "pins": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create new pin",
+      "method": "POST",
+      "body": {
+        "title": "Test Pin",
+        "content": "console.log('test')",
+        "author_id": 1,
+        "is_private": false,
+        "tags": ["javascript"]
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "pin": {
+          "title": "string"
+        }
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

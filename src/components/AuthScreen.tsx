@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { api } from '@/lib/api';
 
 interface AuthScreenProps {
-  onLogin: (username: string) => void;
+  onLogin: (user: any) => void;
 }
 
 const translations = {
@@ -22,6 +23,7 @@ const translations = {
     invalidCredentials: 'Invalid username or password',
     registrationSuccess: 'Registration successful!',
     loginSuccess: 'Welcome back!',
+    accountBanned: 'Your account has been banned',
   },
   ru: {
     title: 'Newbin',
@@ -36,6 +38,7 @@ const translations = {
     invalidCredentials: 'Неверное имя или пароль',
     registrationSuccess: 'Регистрация успешна!',
     loginSuccess: 'С возвращением!',
+    accountBanned: 'Ваш аккаунт заблокирован',
   },
   zh: {
     title: 'Newbin',
@@ -50,6 +53,7 @@ const translations = {
     invalidCredentials: '用户名或密码无效',
     registrationSuccess: '注册成功！',
     loginSuccess: '欢迎回来！',
+    accountBanned: '您的账户已被封禁',
   },
 };
 
@@ -58,32 +62,39 @@ const AuthScreen = ({ onLogin }: AuthScreenProps) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [lang] = useState<'en' | 'ru' | 'zh'>('en');
+  const [loading, setLoading] = useState(false);
 
   const t = translations[lang];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username || !password) return;
 
-    const users = JSON.parse(localStorage.getItem('newbin_users') || '{}');
+    setLoading(true);
 
-    if (isLoginMode) {
-      if (users[username] && users[username] === password) {
-        toast.success(t.loginSuccess);
-        onLogin(username);
-      } else {
-        toast.error(t.invalidCredentials);
+    try {
+      const action = isLoginMode ? 'login' : 'register';
+      const result = await api.auth(action, username, password);
+
+      if (result.error) {
+        if (result.error === 'Username already taken') {
+          toast.error(t.usernameTaken);
+        } else if (result.error === 'Invalid credentials') {
+          toast.error(t.invalidCredentials);
+        } else if (result.error === 'Account is banned') {
+          toast.error(t.accountBanned);
+        } else {
+          toast.error(result.error);
+        }
+      } else if (result.user) {
+        toast.success(isLoginMode ? t.loginSuccess : t.registrationSuccess);
+        onLogin(result.user);
       }
-    } else {
-      if (users[username]) {
-        toast.error(t.usernameTaken);
-      } else {
-        users[username] = password;
-        localStorage.setItem('newbin_users', JSON.stringify(users));
-        toast.success(t.registrationSuccess);
-        onLogin(username);
-      }
+    } catch (error) {
+      toast.error('Connection error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,17 +127,19 @@ const AuthScreen = ({ onLogin }: AuthScreenProps) => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t.password}
               className="bg-input text-foreground"
+              disabled={loading}
             />
           </div>
 
-          <Button type="submit" className="w-full gradient-button text-white font-medium">
-            {isLoginMode ? t.login : t.register}
+          <Button type="submit" className="w-full gradient-button text-white font-medium" disabled={loading}>
+            {loading ? '...' : isLoginMode ? t.login : t.register}
           </Button>
 
           <button
             type="button"
             onClick={() => setIsLoginMode(!isLoginMode)}
             className="w-full text-sm text-primary hover:underline"
+            disabled={loading}
           >
             {isLoginMode ? t.switchToRegister : t.switchToLogin}
           </button>

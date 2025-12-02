@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "Get comments for pin",
+      "method": "GET",
+      "queryStringParameters": {
+        "pin_id": "1"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "comments": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create new comment",
+      "method": "POST",
+      "body": {
+        "pin_id": 1,
+        "author_id": 1,
+        "content": "Great code!"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "comment": {
+          "content": "string"
+        }
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

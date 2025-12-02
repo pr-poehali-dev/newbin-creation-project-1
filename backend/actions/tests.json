@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Report a pin",
+      "method": "POST",
+      "body": {
+        "action": "report",
+        "entity_type": "pin",
+        "entity_id": 1
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Add to favorites",
+      "method": "POST",
+      "body": {
+        "action": "favorite",
+        "user_id": 1,
+        "pin_id": 1,
+        "is_favorite": true
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
